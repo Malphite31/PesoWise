@@ -17,6 +17,7 @@ import {
 interface WalletCardProps {
   wallet: Wallet;
   onEdit?: (wallet: Wallet) => void;
+  className?: string;
 }
 
 const formatPHP = (amount: number) => {
@@ -88,7 +89,7 @@ const getBankLogo = (type: WalletType) => {
     }
 };
 
-export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit }) => {
+export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit, className }) => {
   const [showDetails, setShowDetails] = useState(false);
 
   const getMaskedNumber = () => {
@@ -106,15 +107,18 @@ export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit }) => {
   return (
     <div 
       className={`
-        relative group h-[230px] w-full rounded-3xl overflow-hidden transition-all duration-500 ease-out
+        relative group w-full rounded-2xl overflow-hidden transition-all duration-500 ease-out
         hover:scale-[1.02] hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/20
         ${wallet.color} border border-white/10
         print:break-inside-avoid focus-within:ring-4 focus-within:ring-blue-500/30
+        aspect-[1.58/1] shadow-lg
+        ${className || ''}
       `}
       tabIndex={0}
+      onClick={() => setShowDetails(!showDetails)}
     >
       {/* Background Sheen Effect */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10"></div>
+      <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10"></div>
       
       {/* Decorative Circles */}
       <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none mix-blend-overlay"></div>
@@ -125,12 +129,12 @@ export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit }) => {
           {getBankLogo(wallet.type)}
       </div>
 
-      <div className="relative z-20 h-full flex flex-col justify-between p-7">
+      <div className="relative z-20 h-full flex flex-col p-5 sm:p-6">
         
         {/* Header Row */}
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-white/10 rounded-xl backdrop-blur-md border border-white/10 shadow-sm text-white transition-transform group-hover:rotate-6">
+            <div className="p-2 bg-white/10 rounded-lg backdrop-blur-md border border-white/10 shadow-sm text-white transition-transform group-hover:rotate-6">
                 {getIcon(wallet.type)}
             </div>
             {!showDetails && (
@@ -143,7 +147,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit }) => {
           <div className="flex items-center gap-2 no-print">
             <button 
                 onClick={(e) => { e.stopPropagation(); setShowDetails(!showDetails); }}
-                className="p-2 bg-black/10 hover:bg-black/30 text-white/70 hover:text-white rounded-full backdrop-blur-md transition-colors"
+                className="p-1.5 bg-black/10 hover:bg-black/30 text-white/70 hover:text-white rounded-full backdrop-blur-md transition-colors"
                 title={showDetails ? "Show Balance" : "Show Card Details"}
             >
                 {showDetails ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -151,7 +155,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit }) => {
             {onEdit && (
                 <button 
                     onClick={(e) => { e.stopPropagation(); onEdit(wallet); }}
-                    className="p-2 bg-black/10 hover:bg-black/30 text-white/70 hover:text-white rounded-full backdrop-blur-md transition-colors"
+                    className="p-1.5 bg-black/10 hover:bg-black/30 text-white/70 hover:text-white rounded-full backdrop-blur-md transition-colors"
                     title="Edit Wallet"
                 >
                     <Edit2 className="w-4 h-4" />
@@ -161,14 +165,14 @@ export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit }) => {
         </div>
 
         {/* Dynamic Content Area */}
-        <div className="flex-1 flex flex-col justify-end mt-4">
+        <div className="flex-1 flex flex-col justify-end mt-2">
             {showDetails ? (
                 // REAL CARD LAYOUT
-                <div className="animate-in fade-in zoom-in duration-300 flex flex-col h-full justify-between">
-                     <div className="mt-2 pl-1">
-                        <div className="flex justify-between items-center w-full">
+                <div className="animate-in fade-in zoom-in duration-300 flex flex-col justify-between h-full">
+                     <div className="mt-auto pb-2 pl-1">
+                        <div className="flex justify-between items-center w-full mb-4">
                             {/* EMV Chip */}
-                            <div className="w-12 h-9 rounded-md bg-gradient-to-br from-yellow-200 to-yellow-500 border border-yellow-300/50 shadow-sm relative overflow-hidden flex items-center justify-center">
+                            <div className="w-10 h-8 rounded-md bg-gradient-to-br from-yellow-200 to-yellow-500 border border-yellow-300/50 shadow-sm relative overflow-hidden flex items-center justify-center">
                                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/arches.png')] opacity-30 mix-blend-multiply"></div>
                                 <div className="w-full h-px bg-yellow-800/20 absolute top-1/3"></div>
                                 <div className="w-full h-px bg-yellow-800/20 absolute bottom-1/3"></div>
@@ -177,55 +181,55 @@ export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit }) => {
                             </div>
                             
                             {/* Contactless Icon */}
-                            <Wifi className="w-6 h-6 rotate-90 text-white/70" />
+                            <Wifi className="w-5 h-5 rotate-90 text-white/70" />
+                        </div>
+                        
+                        <div className="font-mono text-lg sm:text-xl tracking-widest text-white drop-shadow-md whitespace-nowrap overflow-hidden text-ellipsis py-1">
+                            {getFormattedNumber()}
                         </div>
                      </div>
 
-                     <div className="space-y-4">
-                        <div className="font-mono text-[1.35rem] tracking-[0.14em] text-white drop-shadow-md whitespace-nowrap overflow-hidden text-ellipsis pl-1 py-1">
-                            {getFormattedNumber()}
+                     <div className="flex justify-between items-end text-white">
+                        <div className="max-w-[60%] overflow-hidden">
+                            <p className="text-[7px] uppercase tracking-widest text-white/70 mb-0.5">Card Holder</p>
+                            <p className="text-xs font-bold tracking-widest uppercase truncate">{wallet.accountName || wallet.name}</p>
                         </div>
-                        
-                        <div className="flex justify-between items-end text-white">
-                            <div className="max-w-[140px]">
-                                <p className="text-[7px] uppercase tracking-widest text-white/70 mb-0.5">Card Holder</p>
-                                <p className="text-xs font-bold tracking-widest uppercase truncate">{wallet.accountName || wallet.name}</p>
+                        <div className="flex items-center gap-3">
+                            <div>
+                                <p className="text-[7px] uppercase tracking-widest text-white/70 mb-0.5 text-center">Expires</p>
+                                <p className="text-xs font-mono font-semibold">{wallet.expiryDate || 'MM/YY'}</p>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <div>
-                                    <p className="text-[7px] uppercase tracking-widest text-white/70 mb-0.5 text-center">Expires</p>
-                                    <p className="text-xs font-mono font-semibold">{wallet.expiryDate || 'MM/YY'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[7px] uppercase tracking-widest text-white/70 mb-0.5 text-center">CVV</p>
-                                    <p className="text-xs font-mono font-semibold">{wallet.cvv || '•••'}</p>
-                                </div>
+                            <div>
+                                <p className="text-[7px] uppercase tracking-widest text-white/70 mb-0.5 text-center">CVV</p>
+                                <p className="text-xs font-mono font-semibold">{wallet.cvv || '•••'}</p>
                             </div>
                         </div>
                      </div>
                 </div>
             ) : (
                 // BALANCE LAYOUT
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-2">
-                    <div className="mb-auto">
-                        <span className="inline-block text-[9px] font-bold uppercase tracking-widest bg-white/20 text-white px-2.5 py-1 rounded-md backdrop-blur-sm border border-white/10 shadow-sm">
-                            {wallet.type} Wallet
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col justify-end h-full">
+                    <div className="mb-auto pt-2">
+                        <span className="inline-block text-[9px] font-bold uppercase tracking-widest bg-white/20 text-white px-2 py-0.5 rounded backdrop-blur-sm border border-white/10 shadow-sm">
+                            {wallet.type}
                         </span>
                     </div>
                     
-                    <div>
-                        <p className="text-sm font-medium text-white/70 mb-0.5">Total Balance</p>
-                        <h3 className="text-3xl font-bold tracking-tight text-white drop-shadow-sm">{formatPHP(wallet.balance)}</h3>
+                    <div className="mb-3">
+                        <p className="text-xs font-medium text-white/70 mb-0.5">Total Balance</p>
+                        <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-white drop-shadow-sm truncate">
+                            {formatPHP(wallet.balance)}
+                        </h3>
                     </div>
                     
-                    <div className="flex justify-between items-end pt-2 border-t border-white/10 mt-3">
+                    <div className="flex justify-between items-end pt-3 border-t border-white/10">
                         <div className="max-w-[60%]">
                             <p className="text-[9px] uppercase tracking-widest text-white/60 mb-0.5">Account Name</p>
                             <p className="text-xs font-medium tracking-wide truncate text-white/90">{wallet.accountName || wallet.name}</p>
                         </div>
                         <div className="text-right">
                             <p className="text-[9px] uppercase tracking-widest text-white/60 mb-0.5">Account No.</p>
-                            <p className="text-sm font-mono tracking-widest text-white/90">{getMaskedNumber()}</p>
+                            <p className="text-xs font-mono tracking-widest text-white/90">{getMaskedNumber()}</p>
                         </div>
                     </div>
                 </div>

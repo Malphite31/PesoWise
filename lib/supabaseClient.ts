@@ -51,6 +51,10 @@ export const isSupabaseConfigured = () => {
     return supabaseUrl !== 'https://placeholder-project.supabase.co';
 };
 
+export const isUsingLocalStorage = () => {
+    return typeof localStorage !== 'undefined' && !!localStorage.getItem('sb_url');
+};
+
 export const saveSupabaseConfig = (url: string, key: string) => {
     // Basic sanitation
     const cleanUrl = formatUrl(url);

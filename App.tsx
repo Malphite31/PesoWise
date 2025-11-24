@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
@@ -21,7 +22,6 @@ import {
   Check,
   Info,
   TrendingUp,
-  Camera,
   LogOut,
   Mail,
   User,
@@ -34,8 +34,7 @@ import {
   Lock,
   FileJson,
   List,
-  Loader2,
-  Database
+  Loader2
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured, clearSupabaseConfig } from './lib/supabaseClient';
 import { api } from './services/api';
@@ -372,12 +371,6 @@ const App: React.FC = () => {
     setActiveView('dashboard');
   };
 
-  const handleDisconnectDB = () => {
-      if (confirm("Are you sure you want to disconnect from the database? You will need to re-enter your API keys.")) {
-          clearSupabaseConfig();
-      }
-  };
-
   // --- CRUD Operations ---
   const handleAddTransaction = async (newTx: Omit<Transaction, 'id'>) => {
     if (!userId) return;
@@ -598,13 +591,10 @@ const App: React.FC = () => {
     } catch(e) { console.error(e); }
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-        const file = e.target.files[0];
-        const imageUrl = URL.createObjectURL(file);
-        handleProfileUpdate({ avatarUrl: imageUrl });
-        alert("Note: Avatar persistence requires Supabase Storage configuration.");
-    }
+  const getInitials = (name: string) => {
+    return name
+      ? name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+      : 'U';
   };
 
   const allNavItems = [
@@ -797,12 +787,8 @@ const App: React.FC = () => {
                     onClick={() => setActiveView('profile')}
                     className="p-1 rounded-full transition-all flex items-center gap-2"
                 >
-                    <div className={`w-10 h-10 rounded-full border-2 overflow-hidden relative ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
-                         {userProfile.avatarUrl ? (
-                             <img src={userProfile.avatarUrl} alt="User" className="w-full h-full object-cover" />
-                         ) : (
-                             <UserCircle className="w-full h-full text-slate-500" />
-                         )}
+                    <div className={`w-10 h-10 rounded-full border-2 overflow-hidden flex items-center justify-center ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-100 border-slate-200 text-slate-600'}`}>
+                         <span className="font-bold text-sm">{getInitials(userProfile.name)}</span>
                     </div>
                 </button>
                 <button 
@@ -1111,23 +1097,13 @@ const App: React.FC = () => {
                             <div className="px-8 pb-8">
                                 <div className="relative flex justify-between items-end -mt-12 mb-6">
                                     <div className="relative group">
-                                        <div className={`w-32 h-32 rounded-3xl border-4 overflow-hidden shadow-2xl ${theme === 'dark' ? 'bg-slate-800 border-slate-900' : 'bg-white border-white'}`}>
-                                            {userProfile.avatarUrl ? (
-                                                <img src={userProfile.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-slate-800 text-slate-500">
-                                                    <UserCircle className="w-16 h-16" />
-                                                </div>
-                                            )}
+                                        <div className={`w-32 h-32 rounded-3xl border-4 overflow-hidden shadow-2xl flex items-center justify-center text-4xl font-bold ${theme === 'dark' ? 'bg-blue-600 border-slate-900 text-white' : 'bg-blue-500 border-white text-white'}`}>
+                                            {getInitials(userProfile.name)}
                                         </div>
-                                        <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-3xl text-white font-medium">
-                                            <Camera className="w-6 h-6 mr-2" /> Change
-                                            <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
-                                        </label>
                                     </div>
                                     <div className="mb-4 hidden sm:block">
                                         <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-600'}`}>
-                                            Free Plan
+                                            Standard Plan
                                         </span>
                                     </div>
                                 </div>
@@ -1278,12 +1254,6 @@ const App: React.FC = () => {
                                 
                                 <div className="mt-auto pt-4 border-t border-dashed border-white/10 space-y-2">
                                     <button 
-                                        onClick={handleDisconnectDB}
-                                        className={`w-full py-3 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900'}`}
-                                    >
-                                        <Database className="w-4 h-4" /> Reconfigure Database
-                                    </button>
-                                    <button 
                                         onClick={handleLogout}
                                         className="w-full py-3 font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition-colors flex items-center justify-center gap-2"
                                     >
@@ -1330,7 +1300,7 @@ const App: React.FC = () => {
                 }`}
             >
                 {isMobileMenuOpen ? <X className="w-6 h-6" strokeWidth={2.5} /> : <Grid className="w-6 h-6" strokeWidth={2} />}
-                <span className="text-[10px] font-bold tracking-wide">Menu</span>
+                <span className="text-[10px] font-bold tracking-wide">More</span>
             </button>
         </nav>
 

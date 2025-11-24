@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Mail, Lock, User, ArrowRight, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Loader2, AlertCircle, CheckCircle, HelpCircle, Inbox } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
 interface LoginViewProps {
@@ -63,8 +63,14 @@ const PasswordStrengthMeter: React.FC<{ password: string }> = ({ password }) => 
 
 const handleAuthError = (err: any) => {
     let msg = err.message || "Authentication failed";
-    if (msg.includes("Failed to fetch")) {
+    const lowerMsg = msg.toLowerCase();
+    
+    if (lowerMsg.includes("failed to fetch")) {
         msg = "Connection error: Unable to reach the database. Please check your Supabase URL configuration and internet connection.";
+    } else if (lowerMsg.includes("email not confirmed")) {
+        msg = "📧 Email not confirmed. Please check your inbox.";
+    } else if (lowerMsg.includes("invalid login credentials")) {
+        msg = "Invalid email or password. Please try again.";
     }
     return msg;
 };
@@ -74,11 +80,13 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onSwitchTo
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsVerification, setNeedsVerification] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setNeedsVerification(false);
     
     try {
         const { error } = await supabase.auth.signInWithPassword({
@@ -89,11 +97,55 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onSwitchTo
         if (error) throw error;
         onLoginSuccess();
     } catch (err: any) {
-        setError(handleAuthError(err));
+        if (err.message && err.message.toLowerCase().includes("email not confirmed")) {
+            setNeedsVerification(true);
+        } else {
+            setError(handleAuthError(err));
+        }
     } finally {
         setIsLoading(false);
     }
   };
+
+  if (needsVerification) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden">
+             <div className="absolute top-0 left-0 w-full h-96 bg-blue-900/20 blur-[120px] pointer-events-none"></div>
+             <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-900/20 blur-[120px] pointer-events-none"></div>
+
+             <div className="w-full max-w-md animate-in fade-in zoom-in duration-500">
+                <div className="glass-panel p-8 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden text-center">
+                    <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                        <Inbox className="w-10 h-10 text-blue-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-white mb-2">Verify Your Email</h2>
+                    <p className="text-slate-400 mb-6 leading-relaxed">
+                        We've sent a confirmation link to <span className="text-white font-medium block mt-1">{email}</span>
+                        <br/>
+                        You <strong>must</strong> click the link in that email before you can log in.
+                    </p>
+                    <div className="space-y-3">
+                        <button 
+                            onClick={() => window.open('https://mail.google.com', '_blank')}
+                            className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20"
+                        >
+                            Open Gmail
+                        </button>
+                         <button 
+                            onClick={() => setNeedsVerification(false)}
+                            className="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all border border-white/5"
+                        >
+                            Back to Login
+                        </button>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-6">
+                        Can't find it? Check your Spam/Junk folder.
+                    </p>
+                </div>
+             </div>
+        </div>
+      );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden">
@@ -113,8 +165,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onSwitchTo
             <div className="glass-panel p-8 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden">
                 <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
                     {error && (
-                        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl flex items-start gap-2 text-xs">
-                            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /> 
+                        <div className={`p-4 rounded-xl flex items-start gap-3 text-sm border ${error.includes('Email') ? 'bg-orange-500/10 border-orange-500/20 text-orange-200' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                            {error.includes('Email') ? <HelpCircle className="w-5 h-5 flex-shrink-0 mt-0.5" /> : <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
                             <span>{error}</span>
                         </div>
                     )}
@@ -186,7 +238,7 @@ export const SignupView: React.FC<SignupViewProps> = ({ onSignupSuccess, onSwitc
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [showVerificationSent, setShowVerificationSent] = useState(false);
   
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -200,7 +252,7 @@ export const SignupView: React.FC<SignupViewProps> = ({ onSignupSuccess, onSwitc
       }
       setIsLoading(true);
       setError(null);
-      setSuccessMessage(null);
+      setShowVerificationSent(false);
 
       try {
         const { data, error } = await supabase.auth.signUp({
@@ -215,16 +267,12 @@ export const SignupView: React.FC<SignupViewProps> = ({ onSignupSuccess, onSwitc
 
         if (error) throw error;
 
-        // If user is created but no session, it usually means email verification is enabled.
         if (data.user && !data.session) {
-             setSuccessMessage("Account created successfully! Please check your email to verify your account before logging in.");
-             setPassword('');
-             setConfirmPassword('');
+             setShowVerificationSent(true);
         } else {
-             setSuccessMessage("Account created successfully! Redirecting...");
              setTimeout(() => {
                  onSignupSuccess();
-             }, 1500);
+             }, 1000);
         }
       } catch (err: any) {
         setError(handleAuthError(err));
@@ -232,6 +280,44 @@ export const SignupView: React.FC<SignupViewProps> = ({ onSignupSuccess, onSwitc
         setIsLoading(false);
       }
     };
+
+    if (showVerificationSent) {
+        return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-full h-96 bg-emerald-900/20 blur-[120px] pointer-events-none"></div>
+             <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-900/20 blur-[120px] pointer-events-none"></div>
+             
+             <div className="w-full max-w-md animate-in fade-in zoom-in duration-500">
+                <div className="glass-panel p-8 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden text-center">
+                    <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Mail className="w-10 h-10 text-emerald-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-white mb-2">Check Your Inbox</h2>
+                    <p className="text-slate-400 mb-6">
+                        Account created! We've sent a verification link to <span className="text-white font-medium">{email}</span>.
+                    </p>
+                    <div className="p-4 bg-slate-800/50 rounded-xl border border-white/5 mb-6 text-sm text-slate-300">
+                        Please confirm your email address to complete the setup and access your dashboard.
+                    </div>
+                    <div className="space-y-3">
+                         <button 
+                            onClick={() => window.open('https://mail.google.com', '_blank')}
+                            className="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all"
+                        >
+                            Open Gmail
+                        </button>
+                        <button 
+                            onClick={onSwitchToLogin}
+                            className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                        >
+                            Proceed to Login <ArrowRight className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+             </div>
+        </div>
+        );
+    }
   
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 relative overflow-hidden">
@@ -256,107 +342,83 @@ export const SignupView: React.FC<SignupViewProps> = ({ onSignupSuccess, onSwitc
                                 <span>{error}</span>
                             </div>
                         )}
-                        
-                        {successMessage && (
-                             <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-xl flex items-start gap-3 text-sm animate-in zoom-in duration-300">
-                                <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" /> 
-                                <div>
-                                    <p className="font-bold mb-1">Success!</p>
-                                    <p>{successMessage}</p>
-                                </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Full Name</label>
+                            <div className="relative">
+                                <User className="absolute left-4 top-3.5 w-5 h-5 text-slate-500" />
+                                <input 
+                                    type="text" 
+                                    required 
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="w-full bg-slate-900/50 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all placeholder-slate-600" 
+                                    placeholder="Juan Dela Cruz"
+                                />
                             </div>
-                        )}
+                        </div>
+    
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
+                            <div className="relative">
+                                <Mail className="absolute left-4 top-3.5 w-5 h-5 text-slate-500" />
+                                <input 
+                                    type="email" 
+                                    required 
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full bg-slate-900/50 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all placeholder-slate-600" 
+                                    placeholder="name@example.com"
+                                />
+                            </div>
+                        </div>
+    
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Password</label>
+                            <div className="relative">
+                                <Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-500" />
+                                <input 
+                                    type="password" 
+                                    required 
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full bg-slate-900/50 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all placeholder-slate-600" 
+                                    placeholder="Create a password"
+                                />
+                            </div>
+                            <PasswordStrengthMeter password={password} />
+                        </div>
 
-                        {!successMessage && (
-                            <>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Full Name</label>
-                                    <div className="relative">
-                                        <User className="absolute left-4 top-3.5 w-5 h-5 text-slate-500" />
-                                        <input 
-                                            type="text" 
-                                            required 
-                                            value={name}
-                                            onChange={(e) => setName(e.target.value)}
-                                            className="w-full bg-slate-900/50 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all placeholder-slate-600" 
-                                            placeholder="Juan Dela Cruz"
-                                        />
-                                    </div>
-                                </div>
-            
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-4 top-3.5 w-5 h-5 text-slate-500" />
-                                        <input 
-                                            type="email" 
-                                            required 
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full bg-slate-900/50 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all placeholder-slate-600" 
-                                            placeholder="name@example.com"
-                                        />
-                                    </div>
-                                </div>
-            
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Password</label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-500" />
-                                        <input 
-                                            type="password" 
-                                            required 
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full bg-slate-900/50 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all placeholder-slate-600" 
-                                            placeholder="Create a password"
-                                        />
-                                    </div>
-                                    <PasswordStrengthMeter password={password} />
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Confirm Password</label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-500" />
-                                        <input 
-                                            type="password" 
-                                            required 
-                                            value={confirmPassword}
-                                            onChange={(e) => setConfirmPassword(e.target.value)}
-                                            className="w-full bg-slate-900/50 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all placeholder-slate-600" 
-                                            placeholder="Repeat password"
-                                        />
-                                    </div>
-                                </div>
-            
-                                <button 
-                                    type="submit" 
-                                    disabled={isLoading}
-                                    className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                                >
-                                    {isLoading ? (
-                                        <>
-                                            <Loader2 className="w-5 h-5 animate-spin" /> Creating Account...
-                                        </>
-                                    ) : (
-                                        <>
-                                            Create Account <ArrowRight className="w-4 h-4" />
-                                        </>
-                                    )}
-                                </button>
-                            </>
-                        )}
-                        
-                        {successMessage && !isLoading && (
-                            <button 
-                                type="button"
-                                onClick={onSwitchToLogin}
-                                className="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
-                            >
-                                Proceed to Login <ArrowRight className="w-4 h-4" />
-                            </button>
-                        )}
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Confirm Password</label>
+                            <div className="relative">
+                                <Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-500" />
+                                <input 
+                                    type="password" 
+                                    required 
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="w-full bg-slate-900/50 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all placeholder-slate-600" 
+                                    placeholder="Repeat password"
+                                />
+                            </div>
+                        </div>
+    
+                        <button 
+                            type="submit" 
+                            disabled={isLoading}
+                            className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" /> Creating Account...
+                                </>
+                            ) : (
+                                <>
+                                    Create Account <ArrowRight className="w-4 h-4" />
+                                </>
+                            )}
+                        </button>
                   </form>
   
                   <div className="mt-6 text-center relative z-10">

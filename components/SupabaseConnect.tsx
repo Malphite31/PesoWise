@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { saveSupabaseConfig } from '../lib/supabaseClient';
 import { Database, Key, Link, Copy, Check, Terminal, AlertTriangle, FileText, Globe, Server, Rocket, ChevronRight, ArrowLeft, Settings, XCircle, RefreshCw, HelpCircle, Activity } from 'lucide-react';
@@ -188,7 +187,7 @@ export const SupabaseConnect: React.FC = () => {
     };
 
     const copyEnv = () => {
-        const envContent = `VITE_SUPABASE_URL=${url.trim() || 'YOUR_SUPABASE_URL'}\nVITE_SUPABASE_ANON_KEY=${key.trim() || 'YOUR_SUPABASE_ANON_KEY'}\nAPI_KEY=YOUR_GEMINI_API_KEY`;
+        const envContent = `VITE_SUPABASE_URL=${url.trim() || 'YOUR_SUPABASE_URL'}\nVITE_SUPABASE_ANON_KEY=${key.trim() || 'YOUR_SUPABASE_ANON_KEY'}`;
         navigator.clipboard.writeText(envContent);
         setEnvCopied(true);
         setTimeout(() => setEnvCopied(false), 2000);

@@ -31,6 +31,18 @@ const formatUrl = (url: string | null): string => {
     return clean.replace(/\/$/, '');
 };
 
+// UUID Generator
+export const generateUUID = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
 // 1. Check Local Storage (User entered via UI)
 const storedUrl = typeof localStorage !== 'undefined' ? localStorage.getItem('sb_url') : null;
 const storedKey = typeof localStorage !== 'undefined' ? localStorage.getItem('sb_key') : null;

@@ -36,7 +36,7 @@ import {
   List,
   Loader2
 } from 'lucide-react';
-import { supabase, isSupabaseConfigured, clearSupabaseConfig } from './lib/supabaseClient';
+import { supabase, isSupabaseConfigured, clearSupabaseConfig, generateUUID } from './lib/supabaseClient';
 import { api } from './services/api';
 import { Dashboard } from './components/Dashboard';
 import { Transaction, Wallet, WalletType, BudgetCategory, Bill, Loan, View, SavingsGoal, AppNotification, Investment, UserProfile } from './types';
@@ -377,11 +377,17 @@ const App: React.FC = () => {
 
     try {
         // Optimistic UI update for transaction
-        const tempId = Math.random().toString();
+        const tempId = generateUUID();
         const optimisticTx: Transaction = { ...newTx, id: tempId };
         
+        // Optimistically add to list first
+        setTransactions(prev => [optimisticTx, ...prev]);
+
+        // Then save to DB
         const savedTx = await api.addTransaction(optimisticTx, userId);
-        setTransactions(prev => [savedTx, ...prev]);
+        
+        // Update list with confirmed data from server
+        setTransactions(prev => prev.map(t => t.id === tempId ? savedTx : t));
 
         const wallet = wallets.find(w => w.id === newTx.walletId);
         if (wallet) {
@@ -416,7 +422,8 @@ const App: React.FC = () => {
         }
     } catch (e) {
         console.error("Failed to add transaction", e);
-        addNotification("Error", "Failed to save transaction", "alert");
+        addNotification("Error", "Failed to save transaction. Please check your connection.", "alert");
+        // Revert optimistic update? For now we just alert.
     }
   };
   
@@ -426,7 +433,10 @@ const App: React.FC = () => {
           const saved = await api.upsertWallet(wallet, userId);
           if (wallets.some(w => w.id === wallet.id)) setWallets(wallets.map(w => w.id === wallet.id ? saved : w));
           else setWallets([...wallets, saved]);
-      } catch(e) { console.error(e); }
+      } catch(e) { 
+        console.error(e);
+        addNotification("Save Error", "Could not save wallet. Please try again.", "alert");
+      }
   };
 
   const deleteWallet = async (id: string) => {
@@ -524,7 +534,7 @@ const App: React.FC = () => {
     if (!wallet || !type || !data) return;
 
     const newTx: Transaction = {
-        id: Math.random().toString(), 
+        id: generateUUID(), 
         date: new Date().toISOString(),
         amount: amount,
         walletId: walletId,

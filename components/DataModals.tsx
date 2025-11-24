@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Wallet, WalletType, Bill, SavingsGoal, BudgetCategory, Loan, LoanType, GoalCategory, Investment, InvestmentType } from '../types';
 import { X, Trash2, Check, Palette, PartyPopper, ShoppingBag, Plane, Shield, Car, Home, GraduationCap, Smartphone, Target, CreditCard, ChevronDown, Plus, TrendingUp, Printer, Calendar } from 'lucide-react';
+import { generateUUID } from '../lib/supabaseClient';
 
 // --- Shared Components ---
 const ModalWrapper: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ isOpen, onClose, title, children }) => {
@@ -336,7 +337,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose, onSav
         };
 
         onSave({
-            id: initialData?.id || Math.random().toString(36).substr(2, 9),
+            id: initialData?.id || generateUUID(),
             name: name || type,
             balance: parseFloat(balance),
             type,
@@ -468,7 +469,7 @@ export const BillModal: React.FC<BillModalProps> = ({ isOpen, onClose, onSave, o
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSave({
-            id: initialData?.id || Math.random().toString(36).substr(2, 9),
+            id: initialData?.id || generateUUID(),
             name,
             amount: parseFloat(amount),
             dueDate,
@@ -592,7 +593,7 @@ export const GoalModal: React.FC<GoalModalProps> = ({ isOpen, onClose, onSave, o
         const colorMap: Record<string, string> = { tech: 'bg-indigo-500', travel: 'bg-cyan-500', vehicle: 'bg-red-500', home: 'bg-emerald-500', shopping: 'bg-pink-500', emergency: 'bg-amber-500', education: 'bg-blue-500', other: 'bg-purple-500' };
 
         onSave({
-            id: initialData?.id || Math.random().toString(36).substr(2, 9),
+            id: initialData?.id || generateUUID(),
             name,
             targetAmount: parseFloat(targetAmount),
             currentAmount: parseFloat(currentAmount),
@@ -671,7 +672,7 @@ export const LoanModal: React.FC<LoanModalProps> = ({ isOpen, onClose, onSave, o
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({ id: initialData?.id || Math.random().toString(36).substr(2, 9), type, name, totalAmount: parseFloat(totalAmount), paidAmount: parseFloat(paidAmount), dueDate, interestRate: parseFloat(interestRate) });
+        onSave({ id: initialData?.id || generateUUID(), type, name, totalAmount: parseFloat(totalAmount), paidAmount: parseFloat(paidAmount), dueDate, interestRate: parseFloat(interestRate) });
         onClose();
     };
 
@@ -739,7 +740,7 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({ isOpen, onClose, onSav
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({ id: initialData?.id || Math.random().toString(36).substr(2, 9), category, limit: parseFloat(limit), spent: parseFloat(spent), color });
+        onSave({ id: initialData?.id || generateUUID(), category, limit: parseFloat(limit), spent: parseFloat(spent), color });
         onClose();
     };
 
@@ -806,7 +807,7 @@ export const InvestmentModal: React.FC<InvestmentModalProps> = ({ isOpen, onClos
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const colors: Record<InvestmentType, string> = { 'stock': 'bg-gradient-to-r from-blue-600 to-indigo-600', 'crypto': 'bg-gradient-to-r from-orange-500 to-yellow-500', 'bond': 'bg-gradient-to-r from-emerald-600 to-teal-500', 'real_estate': 'bg-gradient-to-r from-amber-700 to-amber-600', 'fund': 'bg-gradient-to-r from-cyan-600 to-blue-500', 'other': 'bg-gradient-to-r from-slate-600 to-slate-500' };
-        onSave({ id: initialData?.id || Math.random().toString(36).substr(2, 9), name, type, investedAmount: parseFloat(investedAmount), currentValue: parseFloat(currentValue), symbol, color: colors[type] });
+        onSave({ id: initialData?.id || generateUUID(), name, type, investedAmount: parseFloat(investedAmount), currentValue: parseFloat(currentValue), symbol, color: colors[type] });
         onClose();
     };
 

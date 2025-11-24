@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { saveSupabaseConfig } from '../lib/supabaseClient';
-import { Database, Key, Link, Copy, Check, Terminal, AlertTriangle, FileText, Globe, Server, Rocket, ChevronRight, ArrowLeft, Settings, XCircle } from 'lucide-react';
+import { Database, Key, Link, Copy, Check, Terminal, AlertTriangle, FileText, Globe, Server, Rocket, ChevronRight, ArrowLeft, Settings, XCircle, RefreshCw, HelpCircle, Activity } from 'lucide-react';
 
 const SQL_SCHEMA = `-- Enable UUID extension
 create extension if not exists "uuid-ossp";
@@ -144,11 +144,38 @@ export const SupabaseConnect: React.FC = () => {
     const [copied, setCopied] = useState(false);
     const [envCopied, setEnvCopied] = useState(false);
     const [view, setView] = useState<'connect' | 'sql' | 'deploy'>('connect');
+    
+    // Debug state to check if env vars are visible
+    const [envStatus, setEnvStatus] = useState({
+        urlFound: false,
+        keyFound: false,
+        urlValue: ''
+    });
+
+    useEffect(() => {
+        // @ts-ignore
+        const url = import.meta.env?.VITE_SUPABASE_URL;
+        // @ts-ignore
+        const key = import.meta.env?.VITE_SUPABASE_ANON_KEY;
+        setEnvStatus({
+            urlFound: !!url,
+            keyFound: !!key,
+            urlValue: url ? `${url.substring(0, 15)}...` : 'Missing'
+        });
+    }, []);
 
     const handleConnect = (e: React.FormEvent) => {
         e.preventDefault();
-        const cleanUrl = url.trim();
+        let cleanUrl = url.trim();
         const cleanKey = key.trim();
+        
+        if (!cleanUrl || !cleanKey) return;
+
+        // Auto-fix common URL mistakes
+        if (!cleanUrl.startsWith('http')) {
+            cleanUrl = `https://${cleanUrl}`;
+        }
+
         if (cleanUrl && cleanKey) {
             saveSupabaseConfig(cleanUrl, cleanKey);
         }
@@ -198,13 +225,36 @@ export const SupabaseConnect: React.FC = () => {
                                 <p>PesoWise requires a Supabase backend. Please create a free project at <a href="https://supabase.com" target="_blank" className="underline font-bold hover:text-blue-300">supabase.com</a> to get started.</p>
                             </div>
 
+                            {/* Diagnostics Panel */}
+                            <div className="bg-slate-950 rounded-xl border border-white/5 p-4 space-y-3">
+                                <div className="flex items-center gap-2 mb-2 text-slate-400 text-xs font-bold uppercase tracking-wider">
+                                    <Activity className="w-3 h-3" /> Environment Status
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className={`p-3 rounded-lg border flex flex-col items-center justify-center text-center gap-1 ${envStatus.urlFound ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                                        <span className="text-xs font-bold">VITE_SUPABASE_URL</span>
+                                        <span className="text-[10px] font-mono">{envStatus.urlFound ? 'DETECTED' : 'MISSING'}</span>
+                                    </div>
+                                    <div className={`p-3 rounded-lg border flex flex-col items-center justify-center text-center gap-1 ${envStatus.keyFound ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                                        <span className="text-xs font-bold">VITE_SUPABASE_ANON_KEY</span>
+                                        <span className="text-[10px] font-mono">{envStatus.keyFound ? 'DETECTED' : 'MISSING'}</span>
+                                    </div>
+                                </div>
+                                {!envStatus.urlFound && (
+                                    <p className="text-[11px] text-slate-500 text-center">
+                                        If you used Vercel Auto-Connect, your variables are likely named <code>SUPABASE_URL</code>. 
+                                        Please see the <button onClick={() => setView('deploy')} className="text-blue-400 hover:underline">Deployment Guide</button> to fix this.
+                                    </p>
+                                )}
+                            </div>
+
                             <form onSubmit={handleConnect} className="space-y-4">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Project URL</label>
                                     <div className="relative">
                                         <Link className="absolute left-4 top-3.5 w-5 h-5 text-slate-500" />
                                         <input 
-                                            type="url" 
+                                            type="text" 
                                             required 
                                             value={url}
                                             onChange={(e) => setUrl(e.target.value)}
@@ -212,6 +262,7 @@ export const SupabaseConnect: React.FC = () => {
                                             className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all placeholder-slate-600"
                                         />
                                     </div>
+                                    <p className="text-[10px] text-slate-500 mt-1 pl-1">Found in Supabase: Settings &gt; API &gt; Project URL</p>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Anon / Public Key</label>
@@ -226,6 +277,7 @@ export const SupabaseConnect: React.FC = () => {
                                             className="w-full bg-slate-950 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all placeholder-slate-600"
                                         />
                                     </div>
+                                    <p className="text-[10px] text-slate-500 mt-1 pl-1">Found in Supabase: Settings &gt; API &gt; Project API Keys &gt; anon / public</p>
                                 </div>
                                 <button 
                                     type="submit"
@@ -245,7 +297,7 @@ export const SupabaseConnect: React.FC = () => {
                                     </button>
                                 </div>
                                 <button onClick={() => setView('deploy')} className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-blue-400 font-bold rounded-xl transition-all flex items-center justify-center gap-2 border border-blue-500/20">
-                                    <Rocket className="w-4 h-4" /> Deployment Guide (Vercel)
+                                    <Rocket className="w-4 h-4" /> Fix Vercel / Deployment Issues
                                 </button>
                             </div>
                         </div>
@@ -284,13 +336,13 @@ export const SupabaseConnect: React.FC = () => {
                     {view === 'deploy' && (
                         <div className="space-y-6 animate-in slide-in-from-right-4 fade-in">
                             <div className="p-4 bg-slate-950 rounded-xl border border-white/10 space-y-4">
-                                <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg flex gap-3 text-xs text-yellow-200">
-                                    <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                                <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg flex gap-3 text-xs text-orange-200">
+                                    <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                                     <div>
-                                        <p className="font-bold mb-1">Important: Do not use Vercel "Storage" integrations</p>
+                                        <p className="font-bold mb-1">Did you use Vercel Auto-Connect?</p>
                                         <p className="opacity-80">
-                                            If you see a screen asking to "Connect to peso-wise-db", you can skip it. 
-                                            We use Supabase directly via Environment Variables, not Vercel's native database integration.
+                                            If you used the Vercel Integration, it created variables named <code>SUPABASE_URL</code>. 
+                                            This app <strong>cannot see them</strong> because they lack the <code>VITE_</code> prefix.
                                         </p>
                                     </div>
                                 </div>
@@ -300,25 +352,24 @@ export const SupabaseConnect: React.FC = () => {
                                         <Settings className="w-5 h-5 text-white" />
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-bold text-white mb-1">Go to Settings &gt; Environment Variables</h3>
-                                        <p className="text-xs text-slate-400 leading-relaxed">
-                                            In your Vercel Project Dashboard, navigate to the <strong>Settings</strong> tab, then select <strong>Environment Variables</strong>. Add the following keys manually.
-                                        </p>
+                                        <h3 className="text-sm font-bold text-white mb-1">How to fix (Required)</h3>
+                                        <ol className="text-xs text-slate-400 leading-relaxed list-decimal pl-4 space-y-2 mt-2">
+                                            <li>Go to Vercel Project <strong>Settings</strong> &gt; <strong>Environment Variables</strong>.</li>
+                                            <li>Find <code>SUPABASE_URL</code>. Copy its value.</li>
+                                            <li>Create a new variable named <code className="text-blue-400">VITE_SUPABASE_URL</code> and paste the value.</li>
+                                            <li>Find <code>SUPABASE_ANON_KEY</code>. Copy its value.</li>
+                                            <li>Create a new variable named <code className="text-blue-400">VITE_SUPABASE_ANON_KEY</code> and paste the value.</li>
+                                        </ol>
                                     </div>
                                 </div>
 
-                                <div className="bg-black/40 rounded-lg border border-white/5 p-3 space-y-2">
-                                    <div className="flex justify-between items-center text-xs">
-                                        <span className="font-mono text-blue-400">VITE_SUPABASE_URL</span>
-                                        <span className="text-slate-500 font-mono truncate max-w-[150px]">{url || '...'}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-xs">
-                                        <span className="font-mono text-blue-400">VITE_SUPABASE_ANON_KEY</span>
-                                        <span className="text-slate-500 font-mono truncate max-w-[150px]">{key || '...'}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-xs">
-                                        <span className="font-mono text-purple-400">API_KEY</span>
-                                        <span className="text-slate-500 italic">Your Gemini API Key</span>
+                                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex gap-3 text-xs text-emerald-200">
+                                    <RefreshCw className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-bold mb-1">Redeploy is Mandatory</p>
+                                        <p className="opacity-80">
+                                            After adding the <code>VITE_</code> variables, you MUST go to the <strong>Deployments</strong> tab, click the three dots on the latest deployment, and select <strong>Redeploy</strong>.
+                                        </p>
                                     </div>
                                 </div>
 
@@ -326,7 +377,7 @@ export const SupabaseConnect: React.FC = () => {
                                     onClick={copyEnv}
                                     className={`w-full py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${envCopied ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
                                 >
-                                    {envCopied ? <><Check className="w-3 h-3" /> Copied to Clipboard</> : <><Copy className="w-3 h-3" /> Copy All (.env format)</>}
+                                    {envCopied ? <><Check className="w-3 h-3" /> Copied to Clipboard</> : <><Copy className="w-3 h-3" /> Copy Correct Key Names</>}
                                 </button>
                             </div>
 

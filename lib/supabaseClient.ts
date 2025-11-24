@@ -20,6 +20,17 @@ const getEnvVar = (key: string) => {
   return '';
 };
 
+// Helper to ensure URL is valid
+const formatUrl = (url: string | null): string => {
+    if (!url) return '';
+    let clean = url.trim();
+    if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+        clean = `https://${clean}`;
+    }
+    // Remove trailing slash
+    return clean.replace(/\/$/, '');
+};
+
 // 1. Check Local Storage (User entered via UI)
 const storedUrl = typeof localStorage !== 'undefined' ? localStorage.getItem('sb_url') : null;
 const storedKey = typeof localStorage !== 'undefined' ? localStorage.getItem('sb_key') : null;
@@ -29,9 +40,9 @@ const envUrl = getEnvVar('VITE_SUPABASE_URL');
 const envKey = getEnvVar('VITE_SUPABASE_ANON_KEY');
 
 // 3. Fallback (Triggers Setup Modal)
-// Clean URL prevents double slash issues from bad copy-paste
+// Clean URL prevents double slash issues from bad copy-paste and ensures https
 const rawUrl = storedUrl || envUrl || 'https://placeholder-project.supabase.co';
-const supabaseUrl = rawUrl.replace(/\/$/, '');
+const supabaseUrl = formatUrl(rawUrl);
 const supabaseAnonKey = storedKey || envKey || 'placeholder-anon-key';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -42,7 +53,7 @@ export const isSupabaseConfigured = () => {
 
 export const saveSupabaseConfig = (url: string, key: string) => {
     // Basic sanitation
-    const cleanUrl = url.trim().replace(/\/$/, '');
+    const cleanUrl = formatUrl(url);
     const cleanKey = key.trim();
     localStorage.setItem('sb_url', cleanUrl);
     localStorage.setItem('sb_key', cleanKey);

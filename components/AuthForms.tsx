@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Mail, Lock, User, ArrowRight, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
@@ -60,6 +61,14 @@ const PasswordStrengthMeter: React.FC<{ password: string }> = ({ password }) => 
     );
 };
 
+const handleAuthError = (err: any) => {
+    let msg = err.message || "Authentication failed";
+    if (msg.includes("Failed to fetch")) {
+        msg = "Connection error: Unable to reach the database. Please check your Supabase URL configuration and internet connection.";
+    }
+    return msg;
+};
+
 export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onSwitchToSignup }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -80,7 +89,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onSwitchTo
         if (error) throw error;
         onLoginSuccess();
     } catch (err: any) {
-        setError(err.message || "Failed to login");
+        setError(handleAuthError(err));
     } finally {
         setIsLoading(false);
     }
@@ -104,8 +113,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onSwitchTo
             <div className="glass-panel p-8 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden">
                 <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
                     {error && (
-                        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl flex items-center gap-2 text-sm">
-                            <AlertCircle className="w-4 h-4" /> {error}
+                        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl flex items-start gap-2 text-xs">
+                            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /> 
+                            <span>{error}</span>
                         </div>
                     )}
                     <div>
@@ -217,7 +227,7 @@ export const SignupView: React.FC<SignupViewProps> = ({ onSignupSuccess, onSwitc
              }, 1500);
         }
       } catch (err: any) {
-        setError(err.message || "Failed to create account");
+        setError(handleAuthError(err));
       } finally {
         setIsLoading(false);
       }
@@ -241,8 +251,9 @@ export const SignupView: React.FC<SignupViewProps> = ({ onSignupSuccess, onSwitc
               <div className="glass-panel p-8 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden">
                   <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
                         {error && (
-                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl flex items-center gap-2 text-sm">
-                                <AlertCircle className="w-4 h-4" /> {error}
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl flex items-start gap-2 text-xs">
+                                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /> 
+                                <span>{error}</span>
                             </div>
                         )}
                         

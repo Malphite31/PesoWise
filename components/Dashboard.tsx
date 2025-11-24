@@ -40,6 +40,28 @@ const LINE_COLORS = [
   '#d946ef', // Fuchsia
 ];
 
+// Extracted for reuse between Mobile (Top) and Desktop (Sidebar) views
+const TotalBalanceSection = ({ totalBalance }: { totalBalance: number }) => (
+     <div className="glass-panel p-8 rounded-3xl relative overflow-hidden group bg-gradient-to-br from-blue-600 to-blue-700 border-none shadow-xl shadow-blue-900/20">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-40 h-40 bg-black/20 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none"></div>
+        
+        <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-1 text-blue-100">
+                <span className="text-sm font-medium">Total Balance</span>
+            </div>
+            <h3 className="text-4xl font-bold text-white mb-6 tracking-tight">
+                {new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(totalBalance)}
+            </h3>
+            
+            <div className="flex items-center gap-2 text-xs font-medium text-blue-200 bg-blue-800/30 w-fit px-3 py-1.5 rounded-full border border-blue-500/30">
+                <TrendingUp className="w-3 h-3" />
+                <span>Net Worth Overview</span>
+            </div>
+        </div>
+     </div>
+);
+
 export const Dashboard: React.FC<DashboardProps> = ({ 
   wallets, 
   transactions, 
@@ -97,6 +119,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* LEFT COLUMN (Main Content) */}
         <div className="xl:col-span-2 space-y-8">
             
+            {/* Mobile View: Total Balance displayed first */}
+            <div className="xl:hidden">
+                <TotalBalanceSection totalBalance={totalBalance} />
+            </div>
+
             {/* Wallets Section */}
             <div>
                 <h2 className="text-lg font-bold mb-4 flex items-center gap-2 dark:text-white text-slate-900">
@@ -189,24 +216,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* RIGHT COLUMN (Sidebar Stats) */}
         <div className="space-y-8">
             
-            {/* Total Balance Card */}
-             <div className="glass-panel p-8 rounded-3xl relative overflow-hidden group bg-gradient-to-br from-blue-600 to-blue-700 border-none shadow-xl shadow-blue-900/20">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
-                <div className="absolute bottom-0 left-0 w-40 h-40 bg-black/20 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none"></div>
-                
-                <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-1 text-blue-100">
-                        <span className="text-sm font-medium">Total Balance</span>
-                    </div>
-                    <h3 className="text-4xl font-bold text-white mb-6 tracking-tight">
-                        {new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(totalBalance)}
-                    </h3>
-                    
-                    <div className="flex items-center gap-2 text-xs font-medium text-blue-200 bg-blue-800/30 w-fit px-3 py-1.5 rounded-full border border-blue-500/30">
-                        <TrendingUp className="w-3 h-3" />
-                        <span>Net Worth Overview</span>
-                    </div>
-                </div>
+            {/* Desktop View: Total Balance displayed here */}
+             <div className="hidden xl:block">
+                 <TotalBalanceSection totalBalance={totalBalance} />
              </div>
 
              {/* Upcoming Bills */}

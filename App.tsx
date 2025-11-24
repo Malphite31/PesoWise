@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
@@ -9,7 +8,7 @@ import {
   Bell, 
   UserCircle,
   Target,
-  Edit2,
+  Edit2, 
   Trash2,
   CheckCircle,
   Calendar as CalendarIcon,
@@ -767,11 +766,11 @@ const App: React.FC = () => {
                         )}
                     </button>
                     {isNotificationOpen && (
-                        <div className={`absolute right-0 mt-3 w-80 border rounded-2xl shadow-2xl overflow-hidden z-[100] animate-in slide-in-from-top-2 fade-in duration-200 ${theme === 'dark' ? 'bg-slate-900/95 border-white/10 backdrop-blur-xl' : 'bg-white border-slate-200'}`}>
-                             <div className={`p-4 border-b flex justify-between items-center ${theme === 'dark' ? 'border-white/5 bg-white/5' : 'border-slate-100 bg-slate-50'}`}>
+                        <div className={`absolute right-0 mt-3 w-80 border rounded-2xl shadow-2xl overflow-hidden z-[100] animate-in slide-in-from-top-2 fade-in duration-200 ${theme === 'dark' ? 'bg-slate-900/95 border-white/10 backdrop-blur-xl' : 'bg-white border-slate-200 ring-1 ring-black/5'}`}>
+                             <div className={`p-4 border-b flex justify-between items-center ${theme === 'dark' ? 'border-white/5 bg-white/5' : 'border-slate-100 bg-slate-50/50'}`}>
                                 <h3 className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Notifications</h3>
                             </div>
-                            <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                            <div className={`max-h-[300px] overflow-y-auto custom-scrollbar ${theme === 'dark' ? '' : 'bg-white'}`}>
                                 {notifications.length > 0 ? (
                                     notifications.map(n => (
                                         <div 
@@ -1310,7 +1309,7 @@ const App: React.FC = () => {
                 }`}
             >
                 {isMobileMenuOpen ? <X className="w-6 h-6" strokeWidth={2.5} /> : <Grid className="w-6 h-6" strokeWidth={2} />}
-                <span className="text-[10px] font-bold tracking-wide">More</span>
+                <span className="text-[10px] font-bold tracking-wide">Menu</span>
             </button>
         </nav>
 

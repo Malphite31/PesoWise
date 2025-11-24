@@ -117,8 +117,10 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ data, options, o
                         <h2 className="text-xl font-bold border-l-4 border-purple-600 pl-3 mb-4 uppercase tracking-wider text-slate-800">Expense Breakdown</h2>
                         <div className="grid grid-cols-2 gap-x-8 gap-y-2">
                              {Object.entries(expensesByCategory)
-                                .sort(([,a], [,b]) => b - a)
-                                .map(([cat, amount]) => (
+                                .sort(([,a], [,b]) => (b as number) - (a as number))
+                                .map(([cat, val]) => {
+                                    const amount = val as number;
+                                    return (
                                     <div key={cat} className="flex items-center gap-4 mb-2">
                                         <div className="flex-1">
                                             <div className="flex justify-between text-sm mb-1">
@@ -128,15 +130,16 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ data, options, o
                                             <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                                                 <div 
                                                     className="h-full bg-slate-600" 
-                                                    style={{ width: `${(amount / totalExpense) * 100}%` }}
+                                                    style={{ width: `${(amount / (totalExpense || 1)) * 100}%` }}
                                                 ></div>
                                             </div>
                                         </div>
                                         <div className="w-12 text-right text-xs text-slate-500 font-mono">
-                                            {((amount / totalExpense) * 100).toFixed(1)}%
+                                            {((amount / (totalExpense || 1)) * 100).toFixed(1)}%
                                         </div>
                                     </div>
-                             ))}
+                                    );
+                                })}
                         </div>
                     </div>
                 )}

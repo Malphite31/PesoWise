@@ -1,16 +1,19 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Helper function to safely get environment variables
 const getEnvVar = (key: string) => {
   try {
+    let val = '';
     if (typeof process !== 'undefined' && process.env && process.env[key]) {
-      return process.env[key];
+      val = process.env[key] || '';
     }
     // @ts-ignore
-    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
+    else if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
       // @ts-ignore
-      return import.meta.env[key];
+      val = import.meta.env[key] || '';
     }
+    return val.trim();
   } catch (e) {
     console.warn('Error accessing environment variables', e);
   }
@@ -26,7 +29,9 @@ const envUrl = getEnvVar('VITE_SUPABASE_URL');
 const envKey = getEnvVar('VITE_SUPABASE_ANON_KEY');
 
 // 3. Fallback (Triggers Setup Modal)
-const supabaseUrl = storedUrl || envUrl || 'https://placeholder-project.supabase.co';
+// Clean URL prevents double slash issues from bad copy-paste
+const rawUrl = storedUrl || envUrl || 'https://placeholder-project.supabase.co';
+const supabaseUrl = rawUrl.replace(/\/$/, '');
 const supabaseAnonKey = storedKey || envKey || 'placeholder-anon-key';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -36,8 +41,11 @@ export const isSupabaseConfigured = () => {
 };
 
 export const saveSupabaseConfig = (url: string, key: string) => {
-    localStorage.setItem('sb_url', url);
-    localStorage.setItem('sb_key', key);
+    // Basic sanitation
+    const cleanUrl = url.trim().replace(/\/$/, '');
+    const cleanKey = key.trim();
+    localStorage.setItem('sb_url', cleanUrl);
+    localStorage.setItem('sb_key', cleanKey);
     window.location.reload();
 };
 

@@ -767,7 +767,7 @@ const App: React.FC = () => {
                         )}
                     </button>
                     {isNotificationOpen && (
-                        <div className={`absolute right-0 mt-3 w-80 border rounded-2xl shadow-2xl overflow-hidden z-[100] animate-in slide-in-from-top-2 fade-in duration-200 backdrop-blur-3xl ${theme === 'dark' ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'}`}>
+                        <div className={`absolute right-0 mt-3 w-80 border rounded-2xl shadow-2xl overflow-hidden z-[100] animate-in slide-in-from-top-2 fade-in duration-200 ${theme === 'dark' ? 'bg-slate-900/95 border-white/10 backdrop-blur-xl' : 'bg-white border-slate-200'}`}>
                              <div className={`p-4 border-b flex justify-between items-center ${theme === 'dark' ? 'border-white/5 bg-white/5' : 'border-slate-100 bg-slate-50'}`}>
                                 <h3 className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Notifications</h3>
                             </div>
@@ -781,7 +781,7 @@ const App: React.FC = () => {
                                             <div className={`mt-1 flex-shrink-0 w-2 h-2 rounded-full ${n.type === 'alert' ? 'bg-red-500' : n.type === 'warning' ? 'bg-orange-500' : 'bg-blue-500'}`}></div>
                                             <div>
                                                 <h4 className={`text-sm font-semibold mb-0.5 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{n.title}</h4>
-                                                <p className="text-xs text-slate-400 leading-relaxed">{n.message}</p>
+                                                <p className={`text-xs leading-relaxed ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>{n.message}</p>
                                             </div>
                                         </div>
                                     ))

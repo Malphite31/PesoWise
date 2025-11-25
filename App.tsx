@@ -1454,9 +1454,9 @@ const App: React.FC = () => {
       <ModalWrapper isOpen={isSchemaModalOpen} onClose={() => setIsSchemaModalOpen(false)} title="Database Schema & Updates">
           <div className="p-6 space-y-4">
               <div className="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20 text-sm text-blue-300">
-                  <p className="font-bold mb-1">Required Update for Google Sign-In</p>
+                  <p className="font-bold mb-1">Database Schema</p>
                   <p className="text-xs opacity-80">
-                      Copy the code below and run it in your Supabase SQL Editor to ensure user profiles are created correctly when signing in with Google.
+                      Copy the code below and run it in your Supabase SQL Editor to ensure all tables and functions are set up correctly.
                   </p>
               </div>
               <div className="h-64 overflow-y-auto custom-scrollbar text-xs font-mono text-slate-300 bg-black/30 p-4 rounded-lg leading-relaxed whitespace-pre border border-white/5">

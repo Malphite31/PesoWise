@@ -28,13 +28,13 @@ const formatPHP = (amount: number) => {
 const getIcon = (type: WalletType) => {
   switch (type) {
     case WalletType.CASH:
-      return <Banknote className="w-5 h-5 text-white" />;
+      return <Banknote className="w-4 h-4 text-white" />;
     case WalletType.GCASH:
     case WalletType.MAYA:
-      return <QrCode className="w-5 h-5 text-white" />;
+      return <QrCode className="w-4 h-4 text-white" />;
     case WalletType.PAYPAL:
     case WalletType.WISE:
-      return <Globe className="w-5 h-5 text-white" />;
+      return <Globe className="w-4 h-4 text-white" />;
     case WalletType.SEABANK:
     case WalletType.MARIBANK:
     case WalletType.GOTYME:
@@ -42,7 +42,7 @@ const getIcon = (type: WalletType) => {
     case WalletType.KOMO:
     case WalletType.CIMB:
     case WalletType.OWNBANK:
-      return <Smartphone className="w-5 h-5 text-white" />;
+      return <Smartphone className="w-4 h-4 text-white" />;
     case WalletType.BDO:
     case WalletType.BPI:
     case WalletType.METROBANK:
@@ -53,9 +53,9 @@ const getIcon = (type: WalletType) => {
     case WalletType.PNB:
     case WalletType.SECURITYBANK:
     case WalletType.EASTWEST:
-      return <Landmark className="w-5 h-5 text-white" />;
+      return <Landmark className="w-4 h-4 text-white" />;
     default:
-      return <WalletIcon className="w-5 h-5 text-white" />;
+      return <WalletIcon className="w-4 h-4 text-white" />;
   }
 };
 
@@ -63,29 +63,29 @@ const getIcon = (type: WalletType) => {
 const getBankLogo = (type: WalletType) => {
     switch (type) {
         case WalletType.GCASH: 
-            return <span className="font-bold tracking-tighter text-2xl font-sans text-white drop-shadow-md">GCash</span>;
+            return <span className="font-bold tracking-tighter text-xl font-sans text-white drop-shadow-md">GCash</span>;
         case WalletType.MAYA: 
-            return <span className="font-bold tracking-widest text-2xl uppercase font-sans text-white drop-shadow-md">Maya</span>;
+            return <span className="font-bold tracking-widest text-xl uppercase font-sans text-white drop-shadow-md">Maya</span>;
         case WalletType.BDO: 
-            return <span className="font-black tracking-widest text-2xl uppercase font-sans text-white drop-shadow-md">BDO</span>;
+            return <span className="font-black tracking-widest text-xl uppercase font-sans text-white drop-shadow-md">BDO</span>;
         case WalletType.BPI: 
-            return <span className="font-bold tracking-wide text-2xl font-serif text-white drop-shadow-md">BPI</span>;
+            return <span className="font-bold tracking-wide text-xl font-serif text-white drop-shadow-md">BPI</span>;
         case WalletType.METROBANK: 
-            return <span className="font-bold tracking-wide text-xl italic uppercase text-white drop-shadow-md">Metrobank</span>;
+            return <span className="font-bold tracking-wide text-lg italic uppercase text-white drop-shadow-md">Metrobank</span>;
         case WalletType.SEABANK: 
-            return <span className="font-bold tracking-tighter text-xl text-orange-50 drop-shadow-md">SeaBank</span>;
+            return <span className="font-bold tracking-tighter text-lg text-orange-50 drop-shadow-md">SeaBank</span>;
         case WalletType.MARIBANK: 
-            return <span className="font-bold tracking-tight text-xl text-white drop-shadow-md">MariBank</span>;
+            return <span className="font-bold tracking-tight text-lg text-white drop-shadow-md">MariBank</span>;
         case WalletType.GOTYME:
-            return <span className="font-bold tracking-tight text-xl font-sans text-white drop-shadow-md">GoTyme</span>;
+            return <span className="font-bold tracking-tight text-lg font-sans text-white drop-shadow-md">GoTyme</span>;
         case WalletType.CASH:
-            return <span className="font-bold tracking-[0.3em] text-xl uppercase text-white/90 drop-shadow-md">CASH</span>;
+            return <span className="font-bold tracking-[0.3em] text-lg uppercase text-white/90 drop-shadow-md">CASH</span>;
         case WalletType.PAYPAL:
-            return <span className="font-bold tracking-tight text-xl italic text-white drop-shadow-md">PayPal</span>;
+            return <span className="font-bold tracking-tight text-lg italic text-white drop-shadow-md">PayPal</span>;
         case WalletType.WISE:
-            return <span className="font-bold tracking-tight text-xl text-lime-50 drop-shadow-md">Wise</span>;
+            return <span className="font-bold tracking-tight text-lg text-lime-50 drop-shadow-md">Wise</span>;
         default: 
-            return <span className="font-bold tracking-widest text-sm uppercase text-white drop-shadow-md">{type}</span>;
+            return <span className="font-bold tracking-widest text-xs uppercase text-white drop-shadow-md">{type}</span>;
     }
 };
 
@@ -108,10 +108,10 @@ export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit, classNam
     <div 
       className={`
         relative group w-full rounded-2xl overflow-hidden transition-all duration-500 ease-out
-        hover:scale-[1.02] hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/20
+        hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl
         ${wallet.color} border border-white/10
         print:break-inside-avoid focus-within:ring-4 focus-within:ring-blue-500/30
-        aspect-[1.58/1] shadow-lg
+        aspect-[1.58/1] shadow-md
         ${className || ''}
       `}
       tabIndex={0}
@@ -129,12 +129,12 @@ export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit, classNam
           {getBankLogo(wallet.type)}
       </div>
 
-      <div className="relative z-20 h-full flex flex-col p-5 sm:p-6">
+      <div className="relative z-20 h-full flex flex-col p-5">
         
         {/* Header Row */}
         <div className="flex justify-between items-start">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/10 rounded-lg backdrop-blur-md border border-white/10 shadow-sm text-white transition-transform group-hover:rotate-6">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 bg-white/10 rounded-lg backdrop-blur-md border border-white/10 shadow-sm text-white transition-transform group-hover:rotate-6">
                 {getIcon(wallet.type)}
             </div>
             {!showDetails && (
@@ -144,13 +144,13 @@ export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit, classNam
             )}
           </div>
           
-          <div className="flex items-center gap-2 no-print">
+          <div className="flex items-center gap-1.5 no-print">
             <button 
                 onClick={(e) => { e.stopPropagation(); setShowDetails(!showDetails); }}
                 className="p-1.5 bg-black/10 hover:bg-black/30 text-white/70 hover:text-white rounded-full backdrop-blur-md transition-colors"
                 title={showDetails ? "Show Balance" : "Show Card Details"}
             >
-                {showDetails ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showDetails ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
             </button>
             {onEdit && (
                 <button 
@@ -158,21 +158,21 @@ export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit, classNam
                     className="p-1.5 bg-black/10 hover:bg-black/30 text-white/70 hover:text-white rounded-full backdrop-blur-md transition-colors"
                     title="Edit Wallet"
                 >
-                    <Edit2 className="w-4 h-4" />
+                    <Edit2 className="w-3.5 h-3.5" />
                 </button>
             )}
           </div>
         </div>
 
         {/* Dynamic Content Area */}
-        <div className="flex-1 flex flex-col justify-end mt-2">
+        <div className="flex-1 flex flex-col justify-end mt-1">
             {showDetails ? (
                 // REAL CARD LAYOUT
                 <div className="animate-in fade-in zoom-in duration-300 flex flex-col justify-between h-full">
-                     <div className="mt-auto pb-2 pl-1">
-                        <div className="flex justify-between items-center w-full mb-4">
+                     <div className="mt-auto pb-1 pl-0.5">
+                        <div className="flex justify-between items-center w-full mb-3">
                             {/* EMV Chip */}
-                            <div className="w-10 h-8 rounded-md bg-gradient-to-br from-yellow-200 to-yellow-500 border border-yellow-300/50 shadow-sm relative overflow-hidden flex items-center justify-center">
+                            <div className="w-9 h-7 rounded bg-gradient-to-br from-yellow-200 to-yellow-500 border border-yellow-300/50 shadow-sm relative overflow-hidden flex items-center justify-center">
                                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/arches.png')] opacity-30 mix-blend-multiply"></div>
                                 <div className="w-full h-px bg-yellow-800/20 absolute top-1/3"></div>
                                 <div className="w-full h-px bg-yellow-800/20 absolute bottom-1/3"></div>
@@ -181,7 +181,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit, classNam
                             </div>
                             
                             {/* Contactless Icon */}
-                            <Wifi className="w-5 h-5 rotate-90 text-white/70" />
+                            <Wifi className="w-4 h-4 rotate-90 text-white/70" />
                         </div>
                         
                         <div className="font-mono text-lg sm:text-xl tracking-widest text-white drop-shadow-md whitespace-nowrap overflow-hidden text-ellipsis py-1">
@@ -189,12 +189,12 @@ export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit, classNam
                         </div>
                      </div>
 
-                     <div className="flex justify-between items-end text-white">
-                        <div className="max-w-[60%] overflow-hidden">
+                     <div className="flex justify-between items-end text-white gap-2">
+                        <div className="flex-1 overflow-hidden min-w-0">
                             <p className="text-[7px] uppercase tracking-widest text-white/70 mb-0.5">Card Holder</p>
                             <p className="text-xs font-bold tracking-widest uppercase truncate">{wallet.accountName || wallet.name}</p>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-shrink-0">
                             <div>
                                 <p className="text-[7px] uppercase tracking-widest text-white/70 mb-0.5 text-center">Expires</p>
                                 <p className="text-xs font-mono font-semibold">{wallet.expiryDate || 'MM/YY'}</p>
@@ -209,26 +209,26 @@ export const WalletCard: React.FC<WalletCardProps> = ({ wallet, onEdit, classNam
             ) : (
                 // BALANCE LAYOUT
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex flex-col justify-end h-full">
-                    <div className="mb-auto pt-2">
-                        <span className="inline-block text-[9px] font-bold uppercase tracking-widest bg-white/20 text-white px-2 py-0.5 rounded backdrop-blur-sm border border-white/10 shadow-sm">
+                    <div className="mb-auto pt-1">
+                        <span className="inline-block text-[8px] font-bold uppercase tracking-widest bg-white/20 text-white px-1.5 py-0.5 rounded backdrop-blur-sm border border-white/10 shadow-sm">
                             {wallet.type}
                         </span>
                     </div>
                     
-                    <div className="mb-3">
-                        <p className="text-xs font-medium text-white/70 mb-0.5">Total Balance</p>
-                        <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-white drop-shadow-sm truncate">
+                    <div className="mb-2">
+                        <p className="text-[10px] font-medium text-white/70 mb-0.5">Total Balance</p>
+                        <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white drop-shadow-sm truncate">
                             {formatPHP(wallet.balance)}
                         </h3>
                     </div>
                     
-                    <div className="flex justify-between items-end pt-3 border-t border-white/10">
-                        <div className="max-w-[60%]">
-                            <p className="text-[9px] uppercase tracking-widest text-white/60 mb-0.5">Account Name</p>
-                            <p className="text-xs font-medium tracking-wide truncate text-white/90">{wallet.accountName || wallet.name}</p>
+                    <div className="flex justify-between items-end pt-2 border-t border-white/10 gap-4">
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[8px] uppercase tracking-widest text-white/60 mb-0.5">Account Name</p>
+                            <p className="text-xs font-medium tracking-wide truncate text-white/90" title={wallet.accountName || wallet.name}>{wallet.accountName || wallet.name}</p>
                         </div>
-                        <div className="text-right">
-                            <p className="text-[9px] uppercase tracking-widest text-white/60 mb-0.5">Account No.</p>
+                        <div className="text-right flex-shrink-0">
+                            <p className="text-[8px] uppercase tracking-widest text-white/60 mb-0.5">Account No.</p>
                             <p className="text-xs font-mono tracking-widest text-white/90">{getMaskedNumber()}</p>
                         </div>
                     </div>

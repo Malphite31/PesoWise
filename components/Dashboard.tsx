@@ -132,7 +132,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 {wallets.length > 0 ? (
                     <div className="flex overflow-x-auto pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 gap-4 snap-x custom-scrollbar">
                         {wallets.map(wallet => (
-                            <div key={wallet.id} className="min-w-[85%] sm:min-w-[340px] snap-center">
+                            <div key={wallet.id} className="min-w-[85%] sm:min-w-[300px] snap-center">
                                 <WalletCard wallet={wallet} />
                             </div>
                         ))}

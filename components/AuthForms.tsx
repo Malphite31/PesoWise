@@ -81,6 +81,8 @@ const handleAuthError = (err: any) => {
         msg = "📧 Email not confirmed. Please check your inbox.";
     } else if (lowerMsg.includes("invalid login credentials")) {
         msg = "Invalid email or password. Please try again.";
+    } else if (lowerMsg.includes("provider is not enabled") || lowerMsg.includes("unsupported provider")) {
+        msg = "Google Sign-In is disabled. Please enable the Google provider in your Supabase Authentication settings.";
     }
     return msg;
 };
@@ -400,8 +402,8 @@ export const SignupView: React.FC<SignupViewProps> = ({ onSignupSuccess, onSwitc
               <div className="glass-panel p-8 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden">
                   <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
                         {error && (
-                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl flex items-start gap-2 text-xs">
-                                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /> 
+                            <div className={`p-4 rounded-xl flex items-start gap-3 text-sm border ${error.includes('Google') ? 'bg-orange-500/10 border-orange-500/20 text-orange-200' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" /> 
                                 <span>{error}</span>
                             </div>
                         )}

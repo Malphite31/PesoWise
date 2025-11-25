@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Lock, User, ArrowRight, Loader2, AlertCircle, HelpCircle, Inbox } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
 interface LoginViewProps {
   onLoginSuccess: () => void;
   onSwitchToSignup: () => void;
+  initialError?: string | null;
 }
 
 interface SignupViewProps {
@@ -83,17 +84,38 @@ const handleAuthError = (err: any) => {
         msg = "Invalid email or password. Please try again.";
     } else if (lowerMsg.includes("provider is not enabled") || lowerMsg.includes("unsupported provider")) {
         msg = "Google Sign-In is disabled. Please enable the Google provider in your Supabase Authentication settings.";
+    } else if (lowerMsg.includes("redirect_uri_mismatch") || lowerMsg.includes("site url")) {
+        msg = "Redirect URL Configuration Error. Please add your current URL (e.g., https://your-app.vercel.app) to Supabase Auth -> URL Configuration -> Redirect URLs.";
     }
     return msg;
 };
 
-export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onSwitchToSignup }) => {
+export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onSwitchToSignup, initialError }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError || null);
   const [needsVerification, setNeedsVerification] = useState(false);
+
+  // Parse URL hash for errors (Supabase returns errors in hash after redirect)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes('error=')) {
+        const params = new URLSearchParams(hash.substring(1)); // remove #
+        const errorDesc = params.get('error_description');
+        const errCode = params.get('error_code');
+        const err = params.get('error');
+        
+        if (errorDesc) {
+            setError(errorDesc.replace(/\+/g, ' '));
+        } else if (err) {
+            setError(`${err}: ${errCode || 'Unknown error'}`);
+        }
+        // Clean the URL
+        window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
 
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
@@ -102,7 +124,11 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onSwitchTo
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin
+                redirectTo: window.location.origin,
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'select_account' // Forces account selection to avoid stuck states
+                }
             }
         });
         if (error) throw error;
@@ -295,7 +321,11 @@ export const SignupView: React.FC<SignupViewProps> = ({ onSignupSuccess, onSwitc
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin
+                    redirectTo: window.location.origin,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'select_account'
+                    }
                 }
             });
             if (error) throw error;

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
@@ -33,19 +34,21 @@ import {
   Lock,
   FileJson,
   List,
-  Loader2
+  Loader2,
+  Database,
+  Copy
 } from 'lucide-react';
-import { supabase, isSupabaseConfigured, clearSupabaseConfig, generateUUID } from './lib/supabaseClient';
+import { supabase, isSupabaseConfigured, clearSupabaseConfig, generateUUID, isUsingLocalStorage } from './lib/supabaseClient';
 import { api } from './services/api';
 import { Dashboard } from './components/Dashboard';
 import { Transaction, Wallet, WalletType, BudgetCategory, Bill, Loan, View, SavingsGoal, AppNotification, Investment, UserProfile } from './types';
 import { AddTransactionModal } from './components/AddTransactionModal';
 import { WalletCard } from './components/WalletCard';
-import { WalletModal, BillModal, GoalModal, BudgetModal, LoanModal, CelebrationModal, QuickUpdateModal, InvestmentModal, PrintOptionsModal, PrintOptions } from './components/DataModals';
+import { WalletModal, BillModal, GoalModal, BudgetModal, LoanModal, CelebrationModal, QuickUpdateModal, InvestmentModal, PrintOptionsModal, PrintOptions, ModalWrapper } from './components/DataModals';
 import { LoginView, SignupView } from './components/AuthForms';
 import { ReportDocument } from './components/ReportDocument';
 import { TransactionCalendar } from './components/TransactionCalendar';
-import { SupabaseConnect } from './components/SupabaseConnect';
+import { SupabaseConnect, SQL_SCHEMA } from './components/SupabaseConnect';
 
 const INITIAL_PROFILE: UserProfile = {
     name: "User",
@@ -108,6 +111,7 @@ const App: React.FC = () => {
   // Auth State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authView, setAuthView] = useState<'login' | 'signup'>('login');
+  const [authError, setAuthError] = useState<string | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [isConfigured, setIsConfigured] = useState(true);
@@ -130,6 +134,8 @@ const App: React.FC = () => {
   const [investmentModal, setInvestmentModal] = useState<{ open: boolean; data: Investment | null }>({ open: false, data: null });
   const [celebrationModal, setCelebrationModal] = useState<{ open: boolean; data: SavingsGoal | null }>({ open: false, data: null });
   const [quickUpdateModal, setQuickUpdateModal] = useState<{ open: boolean; type: 'budget' | 'loan' | 'goal' | 'bill' | null; data: any }>({ open: false, type: null, data: null });
+  const [isSchemaModalOpen, setIsSchemaModalOpen] = useState(false);
+  const [schemaCopied, setSchemaCopied] = useState(false);
 
   // Print States
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -175,8 +181,12 @@ const App: React.FC = () => {
         return;
     }
 
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Check active session & catch OAuth redirect errors
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+        if (error) {
+            console.error("Auth Error:", error);
+            setAuthError(error.message);
+        }
         if (session) {
             setIsAuthenticated(true);
             setUserId(session.user.id);
@@ -343,6 +353,12 @@ const App: React.FC = () => {
   const handleGenerateReport = (options: PrintOptions) => {
       setPrintOptions(options);
       setIsPrinting(true);
+  };
+
+  const handleCopySchema = () => {
+      navigator.clipboard.writeText(SQL_SCHEMA);
+      setSchemaCopied(true);
+      setTimeout(() => setSchemaCopied(false), 2000);
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -659,7 +675,7 @@ const App: React.FC = () => {
 
   if (!isAuthenticated) {
       if (authView === 'login') {
-          return <LoginView onLoginSuccess={() => {}} onSwitchToSignup={() => setAuthView('signup')} />;
+          return <LoginView onLoginSuccess={() => {}} onSwitchToSignup={() => setAuthView('signup')} initialError={authError} />;
       } else {
           return <SignupView onSignupSuccess={() => setAuthView('login')} onSwitchToLogin={() => setAuthView('login')} />;
       }
@@ -732,7 +748,7 @@ const App: React.FC = () => {
         <div className="absolute top-0 left-0 w-full h-96 bg-blue-500/5 blur-[120px] pointer-events-none"></div>
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/5 blur-[120px] pointer-events-none"></div>
 
-        <header className="h-20 flex items-center justify-between px-6 lg:px-8 z-10 shrink-0 relative no-print">
+        <header className="h-20 flex items-center justify-between px-6 lg:px-8 z-50 shrink-0 relative no-print">
             <div className="flex items-center gap-4">
                 <h2 className={`text-xl font-bold capitalize ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                     {activeView === 'profile' ? 'My Account' : activeView}
@@ -1164,6 +1180,16 @@ const App: React.FC = () => {
                                                 <span className="text-sm font-medium">Data Backup</span>
                                                 <span className="text-xs text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">Cloud Sync Active</span>
                                             </div>
+                                            {isUsingLocalStorage() && (
+                                                <div className="mt-4 pt-4 border-t border-dashed dark:border-white/10 border-slate-200">
+                                                    <button 
+                                                        onClick={clearSupabaseConfig}
+                                                        className="w-full py-2 text-xs font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors"
+                                                    >
+                                                        Reconfigure Database
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -1246,18 +1272,24 @@ const App: React.FC = () => {
 
                                     <button 
                                         onClick={handlePrintRequest}
-                                        className={`col-span-2 p-4 rounded-2xl border flex items-center justify-between px-6 transition-all group ${theme === 'dark' ? 'border-white/10 hover:bg-white/5 hover:border-purple-500/50' : 'border-slate-200 hover:bg-slate-50 hover:border-purple-500'}`}
+                                        className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-3 text-center transition-all group ${theme === 'dark' ? 'border-white/10 hover:bg-white/5 hover:border-purple-500/50' : 'border-slate-200 hover:bg-slate-50 hover:border-purple-500'}`}
                                     >
-                                        <div className="flex items-center gap-4">
-                                            <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500">
-                                                <Printer className="w-5 h-5" />
-                                            </div>
-                                            <div className="text-left">
-                                                <p className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Generate Report</p>
-                                                <p className="text-[10px] text-slate-500">PDF / Print</p>
-                                            </div>
+                                        <Printer className="w-8 h-8 text-purple-500 mb-1 group-hover:scale-110 transition-transform" />
+                                        <div>
+                                            <p className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Generate Report</p>
+                                            <p className="text-[10px] text-slate-500">PDF / Print</p>
                                         </div>
-                                        <ArrowRight className="w-4 h-4 text-slate-500 group-hover:translate-x-1 transition-transform" />
+                                    </button>
+
+                                    <button 
+                                        onClick={() => setIsSchemaModalOpen(true)}
+                                        className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-3 text-center transition-all group ${theme === 'dark' ? 'border-white/10 hover:bg-white/5 hover:border-orange-500/50' : 'border-slate-200 hover:bg-slate-50 hover:border-orange-500'}`}
+                                    >
+                                        <Database className="w-8 h-8 text-orange-500 mb-1 group-hover:scale-110 transition-transform" />
+                                        <div>
+                                            <p className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Database Schema</p>
+                                            <p className="text-[10px] text-slate-500">View & Update SQL</p>
+                                        </div>
                                     </button>
                                 </div>
                                 
@@ -1418,6 +1450,31 @@ const App: React.FC = () => {
         onClose={() => setIsPrintModalOpen(false)}
         onGenerate={handleGenerateReport}
       />
+      
+      <ModalWrapper isOpen={isSchemaModalOpen} onClose={() => setIsSchemaModalOpen(false)} title="Database Schema & Updates">
+          <div className="p-6 space-y-4">
+              <div className="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20 text-sm text-blue-300">
+                  <p className="font-bold mb-1">Required Update for Google Sign-In</p>
+                  <p className="text-xs opacity-80">
+                      Copy the code below and run it in your Supabase SQL Editor to ensure user profiles are created correctly when signing in with Google.
+                  </p>
+              </div>
+              <div className="h-64 overflow-y-auto custom-scrollbar text-xs font-mono text-slate-300 bg-black/30 p-4 rounded-lg leading-relaxed whitespace-pre border border-white/5">
+                {SQL_SCHEMA}
+              </div>
+              <button 
+                  onClick={handleCopySchema}
+                  className={`w-full py-3 font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${schemaCopied ? 'bg-emerald-600 text-white' : 'bg-blue-600 hover:bg-blue-500 text-white'}`}
+              >
+                  {schemaCopied ? <><Check className="w-4 h-4" /> Copied</> : <><Copy className="w-4 h-4" /> Copy SQL Code</>}
+              </button>
+              <div className="text-center">
+                  <a href="https://supabase.com/dashboard/project/_/sql" target="_blank" rel="noopener noreferrer" className="text-xs text-slate-400 hover:text-white underline">
+                      Open Supabase SQL Editor
+                  </a>
+              </div>
+          </div>
+      </ModalWrapper>
     </div>
   );
 };

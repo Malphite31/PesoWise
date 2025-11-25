@@ -5,7 +5,7 @@ import { X, Trash2, Check, Palette, PartyPopper, ShoppingBag, Plane, Shield, Car
 import { generateUUID } from '../lib/supabaseClient';
 
 // --- Shared Components ---
-const ModalWrapper: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ isOpen, onClose, title, children }) => {
+export const ModalWrapper: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ isOpen, onClose, title, children }) => {
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
